@@ -1,0 +1,55 @@
+Readme - tploader log parser
+
+Author: Xie Di
+Data: 2013.09.12
+version: 1.0.0
+
+1. Introduction
+
+  Tploader log parser is a grammar parser for LZCB core log. The accidence and syntax are fixed, makes this a fast parser. You could use this parser to sweep the log, match log structures, etc.. Input is read from STDIN and output is sent through NSCA.
+
+2. Command Structure
+
+parser [opts]
+
+3. Options
+
+[cache size]  :   Minimum cache size in byte.
+                  Set 0 if you don't need cache.
+
+[cache path]  :   Cache path in file system.
+                  A dummy value should be set even if you don't need cache.
+
+[NSCA path]   :   Path to send_nsca.
+
+[NSCA target] :   Target IP used by send_nsca.
+
+[NSCA config] :   Path to configration file of send_nsca.
+
+[service no.] :   Parser could support multiple tploader shinken services.
+                  Set service count here.
+                  If this is 0, service name will simply be TPLOADER.
+                  Otherwise, service names will be TPLOADER1 - TPLOADERn.
+
+[debug path]  :   Parser output will be also print to this file.
+                  To make this work, use -D__DEBUG__=1 in makefile.
+                  A dummy value should be set even if you don't need debug.
+
+[key count]   :   Set to 1 if you need to count the keys.
+                  Results will be printed to 'keyCountOut' file.
+                  
+4. Example
+
+  Suppose we want to tail a tploader log and send the data through a pipe, we simply use:
+
+tail tploader.log | parser 0 dummycache ./send_nsca 192.168.1.1 ./send_nsca.cfg 1 dummydebug 0
+
+  The above command will turn off cache, debug and key count. And only 1 shinken service is present. Parser and send_nsca binrary, configuration of send_nsca are under the current directory.
+  To simplify the call use of parser, shell script is advised so you don't have to input all these options.
+
+5. IO
+
+  Parser reads from STDIN and directly call shell to execute send_nsca. So you could use pipe to direct another program's output to parser's STDIN.
+  Errors will be printed to parserErr file of current directory.
+  If you turned on debug, parser output will also be printed to debug file as you specified in args.
+  If you specified a positive cache size value, parser output will be cached in cache file, and send by send_nsca altogether once the cache size is reached.

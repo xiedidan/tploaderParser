@@ -1,0 +1,5 @@
+perl tpReader.pl /home/xiedi/xd/tploader.log 1 180 | /home/xiedi/tploaderParser/parser /home/xiedi/tploaderParser/cachefile /home/nagios/nsca/bin/send_nsca 192.168.0.149 /home/nagios/nsca/etc/send_nsca.conf 4
+
+tpReader.pl usage - tpReader.pl [tploader log file path] [sleep interval(seconds)] [read line number per wakeup]
+
+parser usage - parser ]

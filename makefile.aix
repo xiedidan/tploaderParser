@@ -1,0 +1,2 @@
+tploaderParser: lex.yy.cpp parser.tab.cpp callback.cpp bean.cpp handler.cpp utfconv.cpp debug.cpp superReader.cpp multiProc.cpp
+	xlc++ -q64 -o parser lex.yy.cpp parser.tab.cpp callback.cpp bean.cpp handler.cpp utfconv.cpp debug.cpp superReader.cpp multiProc.cpp -L/usr/lib64 -lfl -liconv -I/usr/vacpp/include

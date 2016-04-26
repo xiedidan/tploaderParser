@@ -1,0 +1,30 @@
+Depolyment and compiling - tploader log parser
+
+Author: Xie Di
+Date: 2013.09.14
+Version: 1.0.0
+
+1. Depolyment
+
+  a. Copy the parser and send_nsca binrary, send_nsca configuration and start script to proper directory.
+  b. Run start script.
+
+2. Compiling
+
+  a. Change to src path.
+  b. Run 'make' command.
+
+3. Make options
+
+linux               Create binary for linux platform.
+
+aix                 Create binary for AIX platform.
+
+debug               Print debug info to debug file.
+
+no-precompile       Turns off lexer and grammar precompile.
+
+4. Special Notes for AIX
+
+  If no Flex and Bison is available, you could make on linux platform first, then go to AIX and type 'make aix no-precompile'.
+

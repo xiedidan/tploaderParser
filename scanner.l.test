@@ -1,0 +1,86 @@
+%option noyywrap
+%s HEADER
+%{
+
+#include "typeDefine.h"
+#include "parser.tab.h"
+
+  FILE* out;
+  char* yyval;
+  enum yytokentype
+  {
+    TIME = 258,
+    TYPE = 259,
+    FUNC = 260,
+    SERIAL = 261,
+    KEYSTR = 262,
+    VALSTR = 263,
+    CHAR = 264,
+    ENDITEM = 265,
+    EOL = 266
+  };
+%}
+
+%%
+
+"|" |
+"<" |
+">" |
+"[" |
+"]" |
+"," { return yytext[0]; }
+
+[0-9]{2}"-"[0-9]{2}" "[0-9]{2}":"[0-9]{2}":"[0-9]{2}":"[0-9]{6} { 
+  yyval = yytext;
+  BEGIN HEADER;
+  return TIME;
+}
+
+<HEADER>[0-9 ]{4} { yyval = yytext; return TYPE; }
+
+<HEADER>[a-zA-Z ]{9} { yyval = yytext; return FUNC; }
+
+<HEADER>[0-9]+ { 
+  yyval = yytext;
+  BEGIN INITIAL;
+  return SERIAL;
+}
+
+"</>" { return ENDITEM; }
+
+"KEY" { return KEYSTR; }
+
+"VAL" { return VALSTR; }
+
+\n { return EOL; }
+
+. { yyval = yytext; return CHAR; }
+
+%%
+/* empty */
+int main(int argc, char** argv)
+{
+  int tok;
+
+  if (argc > 1)
+  {
+    if (!(yyin = fopen(argv[1], "r")))
+    {
+      return 1;
+    }
+  }
+
+  out = fopen(argv[2], "w");
+
+  while (tok = yylex())
+  {
+    if (tok > 257)
+      fprintf(out, "%d ", tok);
+    else
+      fprintf(out, "%c ", tok);
+    if (tok == EOL)
+      fprintf(out, "\n");
+  }
+
+  return 0;
+}

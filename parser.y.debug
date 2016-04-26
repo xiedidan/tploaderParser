@@ -1,0 +1,94 @@
+%{
+#define YYERROR_VERBOSE 1
+#include "common.h"
+#include "bean.h"
+#include "callback.h"
+#include "tploaderParser.h"
+
+  extern FILE* yyin;
+  extern int yylex(void);
+  extern int yylineno;
+  FILE* outfile;
+  extern bool valueFlag;
+%}
+
+%union
+{
+  char* str;
+  struct Pair* pair;
+  vector<struct Pair*>* pairList;
+  struct MsgHeader* header;
+  struct PairMsg* pairMsg;
+  struct Msg* msg;
+}
+
+%token <str> TIME TYPE FUNC SERIAL CHAR
+%token KEYSTR
+%token VALSTR
+%token ENDITEM
+%token EOL
+
+%type <str> key str
+%type <pair> pair item
+%type <pairList> pairlist
+%type <header> header
+%type <pairMsg> pairmsg
+%type <msg> msg
+
+%%
+
+log:
+| log msg { printf("log %d\n\n", yylineno); printMsg(outfile, $2); }
+| log pairmsg { printf("log %d\n\n", yylineno); printPairMsg(outfile, $2); }
+;
+
+msg: header str '|' EOL { printf("msg "); $$ = msgCB($1, $2); }
+;
+
+pairmsg: header pairlist '|' EOL { printf("pairmsg "); $$ = pairMsgCB($1, NULL, $2); }
+| header str pairlist '|' EOL { printf("pairmsg "); $$ = pairMsgCB($1, $2, $3); }
+| header pair '|' EOL { printf("pairmsg "); $$ = pairlineMsgCB($1, $2); }
+;
+
+header: TIME '|' TYPE '|' FUNC '|' SERIAL '|' { printf("header time: %s ", $1); $$ = headerCB($1, $3, $5, $7); }
+;
+
+pair: KEYSTR '[' str ']' ',' VALSTR '[' str ']' { $$ = pairCB($3, $8); printf("[%s,%s] ", $$->key, $$->value); }
+;
+
+pairlist: pairlist item { $$ = pairlistCB($1, $2); }
+| item { printf("pairlist "); $$ = pairlistCB(NULL, $1); }
+;
+
+item: key str ENDITEM { printf("item "); $$ = itemCB($1, $2); }
+;
+
+key: '<' str '>' { printf("key "); valueFlag = true; $$ = $2; }
+;
+
+str: /* nothing */
+| str CHAR { $$ = strCB($1, $2); printf("%s ", $$); }
+| CHAR { $$ = strCB(NULL, $1); printf("%s ", $$); }
+;
+
+%%
+
+main(int argc, char** argv)
+{
+  if (argc > 2)
+  {
+    if (!(yyin = fopen(argv[1], "r")))
+      return 1;
+    outfile = fopen(argv[2], "w");
+    yyparse();
+
+    return 0;
+  }
+  else
+    return 2;
+}
+
+void yyerror(char* s)
+{
+  fprintf(stderr, "tploader parser error: %s\n", s);
+}
