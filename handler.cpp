@@ -1,4 +1,6 @@
 #include "common.h"
+#include <unistd.h>
+#include <errno.h>
 #include "bean.h"
 #include "handler.h"
 #include "utfconv.h"
@@ -219,7 +221,7 @@ void MsgPkg::sendNsca(char* message)
 
   if (utfLen <= 0)
   {
-    printf("UTF buffer: %d %s\n", utfLen, utfBuffer);
+    // printf("UTF buffer:%d errno:%d %s\n", utfLen, errno, utfBuffer);
     fprintf(errfile, "Failed to convert %s to UTF-8.\n", message);
     return;
   }
@@ -282,7 +284,7 @@ void MsgPkg::sendNsca(char* message)
   else if (0 == pid)
   {
     // this is child process
-    // system(cmd);
+    system(cmd);
 
     if (utfBuffer)
       free(utfBuffer);

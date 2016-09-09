@@ -10,10 +10,18 @@ int code_convert(char *from_charset, char *to_charset,	char *inbuf,	size_t inlen
         size_t len_tmp = outlen;
         
         cd = iconv_open(to_charset,from_charset);
-        if (cd==0) return -1;
+        if (cd == -1)
+        {
+          printf("iconv_open() failed. errno:%d\n", errno);
+          return -1;
+        }
         memset(outbuf,0,outlen);
         if ( iconv(cd, pin, &inlen, (char**)pout, &len_tmp) == -1 ) 
-                return -1;
+        {
+          printf("iconv() failed. errno:%d\n", errno);
+          return -1;
+        }
+
         iconv_close(cd);
 
         outlen = outlen - len_tmp;
